@@ -1,0 +1,32 @@
+name: Update check.json
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout update branch
+        uses: actions/checkout@v3
+        with:
+          ref: update
+          
+      - name: Update JSON
+        uses: restackio/update-json-file-action@2.1
+        with:
+          file: check.json
+          fields: |
+            {
+              "version": "${{ github.event.release.tag_name }}",
+              "url": "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/Musify.apk"
+            }
+            
+      - name: Commit changes
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add check.json
+          git commit -m "Update version to ${{ github.event.release.tag_name }}"
+          git push
